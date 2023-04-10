@@ -1,0 +1,15 @@
+version: '3'
+services:
+  wizardapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wizardapi
+    image: wizardapi
+    restart: always
+    ports:
+      - "8003:8000"
+    volumes:
+      - /var/log/wizardapi:/var/log/wizardapi
+    env_file:
+      - .env
