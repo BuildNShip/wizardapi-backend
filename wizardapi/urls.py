@@ -18,6 +18,6 @@ from django.contrib import admin
 from django.urls import path,include
 
 urlpatterns = [
-    path('wizardapi/v1/', include('api.urls')),
+    path('wizardapi/', include('api.urls')),
     path('admin/', admin.site.urls),
 ]
