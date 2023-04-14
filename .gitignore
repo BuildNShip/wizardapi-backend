@@ -6,3 +6,5 @@ db.sqlite3
 demo.csv
 env
 logs
+media
+uploads
