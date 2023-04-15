@@ -31,9 +31,10 @@ class Category(models.Model):
 
     id = models.AutoField(primary_key=True)
     category_name = models.CharField(max_length=30)
+    user_token = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     created_by = models.TextField(null=True, blank=True)
     is_global = models.BooleanField(null=True, blank=True, default=False)
-    status = models.IntegerField( max_length=1, choices=STATUS_CHOICES, default=ACTIVE)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)

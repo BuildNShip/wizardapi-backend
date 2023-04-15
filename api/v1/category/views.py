@@ -27,3 +27,23 @@ class ListCategory(APIView):
         categories=Category.objects.filter(deleted_at__isnull=True,status=ResponseCodes.ACTIVE)
         serializer=CategorySerializer(categories, many=True)
         return Response(serializer.data)
+
+class AddEditCategory(APIView):
+    def post(self,request):
+        request_data=request.data
+        serializer=CategorySerializer(data=request_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response({"hasError": True})
+    
+    def put(self,request,category_id):
+        category=Category.objects.get(id=category_id)
+        request_data=request.data
+        serializer=CategorySerializer(category,data=request_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response({"hasError": True})
+
+

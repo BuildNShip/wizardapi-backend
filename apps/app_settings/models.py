@@ -34,4 +34,4 @@ class ResponseCodes(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
-    status = models.IntegerField(max_length=1, choices=STATUS_CHOICES, default=ACTIVE, null=False)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE, null=False)
