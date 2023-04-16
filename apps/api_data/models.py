@@ -1,7 +1,6 @@
 from django.db import models
-from category.models import Category
-from app_settings.models import ResponseCodes
-# Create your models here.
+from apps.category.models import Category
+from apps.app_settings.models import ResponseCodes
 
 
 class APIData(models.Model):
@@ -86,7 +85,7 @@ class ApiResponses(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    response_code = models.ForeignKey(ResponseCodes, on_delete=models.CASCADE, null=True)
+    response_code = models.ForeignKey(ResponseCodes, on_delete=models.DO_NOTHING, null=True)
     body = models.JSONField()
     status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
