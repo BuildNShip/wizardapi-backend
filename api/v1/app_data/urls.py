@@ -1,7 +1,7 @@
-from django.urls import include,path
+from django.urls import include, path
 
-from .views import ListResponseCode
+from .views import ResponseCodeListView
 
 urlpatterns = [
-    path('response-code/list',ListResponseCode.as_view(), name="list_response_code")
+    path('response-code/list', ResponseCodeListView.as_view(), name="list_response_code")
 ]

@@ -1,6 +1,7 @@
 from django.db import models
 
 # Create your models here.
+from apps.api_data.models import UserToken
 
 
 class Category(models.Model):
@@ -32,10 +33,15 @@ class Category(models.Model):
     id = models.AutoField(primary_key=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     category_name = models.CharField(max_length=30)
-    user_token = models.TextField()
+    user_token = models.ForeignKey(UserToken, on_delete=models.DO_NOTHING, related_name='user_token_category',
+                                   null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
-    created_by = models.TextField(null=True, blank=True)
-    updated_by = models.TextField(null=True, blank=True)
+    # created_by = models.TextField(null=True, blank=True)
+    # updated_by = models.TextField(null=True, blank=True)
     is_global = models.BooleanField(null=True, blank=True, default=False)
+
+    class Meta:
+        db_table = "category"
+        managed = True

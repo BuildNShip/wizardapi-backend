@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class ResponseCodes(models.Model):
     """
     A model representing response codes.
@@ -19,7 +18,7 @@ class ResponseCodes(models.Model):
         status (int): The status of the response code, either active or inactive, default is inactive.
 
     """
-    
+
     ACTIVE = 0
     INACTIVE = 1
 
@@ -29,8 +28,8 @@ class ResponseCodes(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    code=models.IntegerField()
-    title=models.CharField(max_length=30)
+    code = models.IntegerField()
+    title = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)

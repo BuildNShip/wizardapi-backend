@@ -3,6 +3,46 @@ from apps.category.models import Category
 from apps.app_settings.models import ResponseCodes
 
 
+class UserToken(models.Model):
+
+    """
+    A model for storing app_token from common auth server.
+
+    Fields:
+        ACTIVE (str): Constant for active status.
+        INACTIVE (str): Constant for inactive status.
+        STATUS_CHOICES (tuple): Tuple of tuples containing the status choices for the model.
+        id (int): The primary key of the model.
+        user_token (str): The user token.
+        api_token (str): The API token.
+        status (int): The status, either active or inactive.
+        created_at (datetime): The date and time of creation.
+        updated_at (datetime): The date and time of last update.
+        deleted_at (datetime): The date and time of deletion.
+
+    """
+
+    ACTIVE = 0
+    INACTIVE = 1
+
+    STATUS_CHOICES = (
+        (ACTIVE, 'Active'),
+        (INACTIVE, 'Inactive'),
+    )
+
+    id = models.AutoField(primary_key=True)
+    user_token = models.TextField()
+    api_token = models.TextField()
+    status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "user_token"
+        managed = True
+
+
 class APIData(models.Model):
 
     """
@@ -15,7 +55,6 @@ class APIData(models.Model):
         METHOD_CHOICES (tuple): Tuple of tuples containing the method choices for the model.
         id (int): The primary key of the model.
         user_token (str): The user token.
-        api_token (str): The API token.
         category (Category): The category of the API.
         Responses (ManyToManyField): The responses associated with the API data.
         url (str): The URL of the API.
@@ -48,16 +87,19 @@ class APIData(models.Model):
     )
 
     id = models.AutoField(primary_key=True)
-    user_token = models.TextField()
-    api_token = models.TextField()
+    user_token = models.ForeignKey(UserToken, on_delete=models.DO_NOTHING, related_name='user_token_api_data', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, null=True)
-    Responses = models.ManyToManyField('ApiResponses', through='ApiDataResponses')
+    responses = models.ManyToManyField('ApiResponses', through='ApiDataResponses')
     url = models.CharField(max_length=1024)
     method = models.IntegerField(choices=METHOD_CHOICES, default=POST)
     status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "api_data"
+        managed = True
 
 
 class ApiResponses(models.Model):

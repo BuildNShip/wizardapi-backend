@@ -13,6 +13,8 @@ from rest_framework import authentication
 import jwt
 from cryptography.fernet import Fernet
 
+from apps.api_data.models import UserToken
+
 
 class Encryption:
     key = Fernet(bytes(settings.ENCRYPT_KEY, 'utf-8'))
@@ -91,12 +93,8 @@ class Utils:
 
     @staticmethod
     def get_input(request, post_fields: dict, request_data_set: list, who_did=True) -> dict:
-        # temporary until implementing authentication class
-        auth_header = authentication.get_authorization_header(request).split()
-        token = auth_header[1].decode('utf-8')
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'], options={"verify_signature": True})
-       
-        user_token = Encryption().decrypt(payload.get('userToken'))
+        user_token = request.auth
+
         if type(request_data_set) is list:
             for request_data in request_data_set:
                 for key, value in post_fields.items():
@@ -108,10 +106,10 @@ class Utils:
                     if request.user:
                         if any(c in request_data.keys() for c in ('id', 'pk', 'ID')):
                             request_data.update({"updated_by": user_token,
-                                "user_token":user_token})
+                                                 "user_token": user_token})
                         else:
                             request_data.update({"updated_by": user_token, "created_by": user_token,
-                                "user_token":user_token})
+                                                 "user_token": user_token})
         else:
             for key, value in post_fields.items():
                 if value in request_data_set.keys():
@@ -121,10 +119,10 @@ class Utils:
             if who_did:
                 if request.user:
                     if any(c in request_data_set.keys() for c in ('id', 'pk', 'ID')):
-                        request_data_set.update({"updated_by": user_token, "user_token":user_token})
+                        request_data_set.update({"updated_by": user_token, "user_token": user_token})
                     else:
                         request_data_set.update({"updated_by": user_token, "created_by": user_token,
-                             "user_token":user_token})
+                                                 "user_token": user_token})
         return request_data_set
 
     @staticmethod
@@ -154,11 +152,13 @@ class Utils:
             pwd += ''.join(secrets.choice(alphabet))
         return pwd
 
+
 class CustomResponse:
     """
     Class for returning custom success and faliure REST responses
 
     """
+
     @staticmethod
     def success(response={}, errors={}, message="Success", debug_message='', error_code=-1, status_code=None):
         json_obj = {"hasError": False, "errorCode": error_code, "message": message, "debugMessage": debug_message,
@@ -167,10 +167,9 @@ class CustomResponse:
             return Response(json_obj, status=status.HTTP_200_OK)
         return Response(json_obj, status=status_code)
 
-
     @staticmethod
     def failure(response={}, errors={}, debug_message='Invalid', status_code=None, error_code=1001,
-                        message="Failure"):
+                message="Failure"):
         json_obj = {"hasError": True, "errorCode": error_code, "message": message, "debugMessage": debug_message,
                     "response": response, 'errors': errors}
         if status_code is None:

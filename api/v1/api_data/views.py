@@ -1,20 +1,17 @@
-
 import json
 from api.exception import InvalidPK
 from apps.api_data.models import APIData
-from .serializers import CategorySerializer, CategoryListSerializer, UrlListSerializer, UrlSerializer, UrlViewSerializer
-from apps.category.models import Category
-from apps.app_settings.models import ResponseCodes
+from .serializers import UrlListSerializer, UrlSerializer, UrlViewSerializer
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from api.utility.utils import CustomResponse, Utils
+from ...backends import JWTAuthentication
 
 
 class UrlListView(APIView):
     """
     API view to retrieve a list of active urls.
 
-    Endpoint: `/url/list/`
+    Endpoint: `/url/list`
 
     HTTP Method: GET
 
@@ -29,17 +26,19 @@ class UrlListView(APIView):
     Returns a JSON response containing serialized url data.
 
     """
-    def get(self,request):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
         page = request.query_params.get("pageIndex", 1)
         per_page = request.query_params.get("perPage", None)
-        filter_query =  request.query_params.get("query", "")
+        filter_query = request.query_params.get("query", "")
         kwargs = {"url__icontains": filter_query, "deleted_at__isnull": True,
-         "status": APIData.ACTIVE} if filter_query != "" else {"deleted_at__isnull": True,
-         "status": APIData.ACTIVE}
-        
-        queryset=APIData.objects.filter(**kwargs)
+                  "status": APIData.ACTIVE} if filter_query != "" else {"deleted_at__isnull": True,
+                                                                        "status": APIData.ACTIVE}
+
+        queryset = APIData.objects.filter(**kwargs)
         pagination = Utils.pagination(queryset, page, per_page)
-        serializer=UrlListSerializer(pagination.get("queryset"), many=True)
+        serializer = UrlListSerializer(pagination.get("queryset"), many=True)
 
         return CustomResponse.success({"list": serializer.data, "pagination": pagination.get("pagination")})
 
@@ -48,7 +47,7 @@ class UrlDetailView(APIView):
     """
     API view to retrieve a specific APIData object.
 
-    Endpoint: `/url/view/<int:pk>/`
+    Endpoint: `url/view`
 
     HTTP Method: GET
 
@@ -62,6 +61,8 @@ class UrlDetailView(APIView):
 
     Returns a JSON response containing serialized APIData object data.
     """
+    authentication_classes = [JWTAuthentication]
+
     def post(self, request):
         try:
             pk = request.data.get('pk')
@@ -72,17 +73,30 @@ class UrlDetailView(APIView):
             return CustomResponse.failure(error_code=1002, message="Url not found.")
 
 
-
 class UrlCreateUpdateView(APIView):
+    """
 
-    def post(self,request):
+    params:{
+    "url": string,
+    "method": int,
+    "category": int(fkey),
+    "responses":{
+    "responseCode":int(fkey),
+    "body":json,
+    "default":bool
+    }
+    }
+    """
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
         try:
             request_data = json.loads(json.dumps(request.data))
             post_fields = {
                 "url": "url",
                 "method": "method",
                 "category": "category",
-                "body":"body"
+                "responses": "responses"
             }
             validate_data = Utils.get_input(request, post_fields, request_data)
             pk = Utils.get_pk(request_data)
@@ -98,8 +112,9 @@ class UrlCreateUpdateView(APIView):
 
             else:
 
-                return CustomResponse.failure(error_code=1001, message="validation error", debug_message="validation error",
-                                        errors=serializer.errors)
+                return CustomResponse.failure(error_code=1001, message="validation error",
+                                              debug_message="validation error",
+                                              errors=serializer.errors)
         except APIData.DoesNotExist as dne:
             err = "Given pk value not exists or it might be removed"
             # ErrorReporting.error_report("NO_DATA", "MEDIUM", CategoryCreateUpdateView.__name__, err,
@@ -108,17 +123,10 @@ class UrlCreateUpdateView(APIView):
 
         except InvalidPK as ipk:
             return CustomResponse.failure(error_code=ipk.errors.get("error_code"), message=str(ipk),
-                                    debug_message=ipk.errors.get("message"))
+                                          debug_message=ipk.errors.get("message"))
 
         except Exception as e:
             import traceback
             # ErrorReporting.error_report("EXCEPTION", "HIGH", CategoryCreateUpdateView.__name__,
             #                                     traceback.format_exc(), request=request)
             return CustomResponse.failure(error_code=1002, message="exception caught", debug_message=str(e))
-
-
-
-
-
-
-
