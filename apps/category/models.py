@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from apps.api_data.models import UserToken
+# from apps.api_data.models import UserToken
 
 
 class Category(models.Model):
@@ -22,8 +22,8 @@ class Category(models.Model):
         status (int): The status, either active or inactive, default is inactive.
 
     """
-    ACTIVE = 0
-    INACTIVE = 1
+    ACTIVE = 1
+    INACTIVE = 0
 
     STATUS_CHOICES = (
         (ACTIVE, 'Active'),
@@ -33,7 +33,7 @@ class Category(models.Model):
     id = models.AutoField(primary_key=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=ACTIVE)
     category_name = models.CharField(max_length=30)
-    user_token = models.ForeignKey(UserToken, on_delete=models.DO_NOTHING, related_name='user_token_category',
+    user_token = models.ForeignKey('api_data.UserToken', on_delete=models.DO_NOTHING, related_name='user_token_category',
                                    null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)

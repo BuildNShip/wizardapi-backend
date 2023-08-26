@@ -52,11 +52,16 @@ class CategoryCreateUpdateView(APIView):
     def post(self, request):
         try:
             request_data = json.loads(json.dumps(request.data))
+            print("request",request_data)
             post_fields = {
                 "category_name": "categoryName"
             }
             validate_data = Utils.get_input(request, post_fields, request_data)
+            print("validated data",validate_data)
+
             pk = Utils.get_pk(request_data)
+            print("pk",pk)
+
             if pk:
                 instance = Category.objects.get(pk=pk, deleted_at__isnull=True)
                 serializer = CategorySerializer(instance, data=validate_data, context={"request": request})

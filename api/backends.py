@@ -17,11 +17,18 @@ class JWTAuthentication(authentication.BaseAuthentication):
     authentication_header_prefix = 'Token'
 
     def authenticate(self, request):
+        # print(request)
+
         request.user = None
+        # print("user",request.user)
         auth_header = authentication.get_authorization_header(request).split()
+        # print("auth header",auth_header)
         auth_header_prefix = self.authentication_header_prefix.lower()
+        # print("auth header prefix",auth_header_prefix)
+
 
         if not auth_header:
+            print("1")
             msg = {
                 "hasError": True,
                 "errorCode": 2001,
@@ -32,6 +39,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise CustomAPIException(msg)
 
         if len(auth_header) == 1:
+            print("2")
+
             msg = {
                 "hasError": True,
                 "errorCode": 2002,
@@ -42,6 +51,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise CustomAPIException(msg)
 
         elif len(auth_header) > 2:
+            print("3")
+
             msg = {
                 "hasError": True,
                 "errorCode": 2003,
@@ -52,9 +63,13 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise CustomAPIException(msg)
 
         prefix = auth_header[0].decode('utf-8')
+        print("prefix",prefix)
         token = auth_header[1].decode('utf-8')
+        print("token",token)
+
 
         if prefix.lower() != auth_header_prefix:
+            print('here')
             msg = {
                 "hasError": True,
                 "errorCode": 2004,
@@ -70,7 +85,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         try:
             payload = jwt.decode(token, settings.AUTH_SECRET_KEY, algorithms=['HS256'], options={"verify_signature": True})
             if payload:
-                user_id = payload.get("user_id", None)
+                user_id = payload.get("userId", None)
                 expiry_date = payload.get("expiry", None)
 
                 if expiry_date:
@@ -86,7 +101,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
                         }
                         raise CustomAPIException(msg)
                     else:
-                        response = CommonAuthResourceAccess.verify_auth_token(token)
+                        response = CommonAuthResourceAccess().verify_auth_token(token)
+                        print(response,token)
                         if response.get('hasError'):
                             msg = {
                                     "hasError": True,
@@ -108,8 +124,8 @@ class JWTAuthentication(authentication.BaseAuthentication):
                         #     raise CustomAPIException(msg)
 
                         else:
-                            user_token_obj = UserToken.objects.filter(deleted_at__isnull=True, status=UserToken.ACTIVE,
-                                                                      user_token=payload.get('userToken')).first()
+                            user_token_obj,created = UserToken.objects.get_or_create(deleted_at=None, status=UserToken.ACTIVE,
+                                                                      user_token=response.get('response').get('app_token'))
                             return user_id, user_token_obj
                 else:
                     msg = {
@@ -136,6 +152,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
                 raise CustomAPIException(msg)
 
         except InvalidSignatureError as ise:
+            print(ise)
             msg = {
                 "hasError": True,
                 "errorCode": 2009,

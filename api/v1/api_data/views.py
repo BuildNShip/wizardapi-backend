@@ -5,7 +5,8 @@ from .serializers import UrlListSerializer, UrlSerializer, UrlViewSerializer
 from rest_framework.views import APIView
 from api.utility.utils import CustomResponse, Utils
 from ...backends import JWTAuthentication
-
+from decouple import config
+import requests
 
 class UrlListView(APIView):
     """
@@ -66,10 +67,14 @@ class UrlDetailView(APIView):
     def post(self, request):
         try:
             pk = request.data.get('pk')
+            print("pk",pk)
             instance = APIData.objects.get(pk=pk, deleted_at__isnull=True)
+            print("instance",instance)
             serializer = UrlViewSerializer(instance, context={"request": request})
+            print("data",serializer.data)
             return CustomResponse.success(serializer.data)
         except APIData.DoesNotExist:
+            
             return CustomResponse.failure(error_code=1002, message="Url not found.")
 
 
@@ -92,6 +97,7 @@ class UrlCreateUpdateView(APIView):
     def post(self, request):
         try:
             request_data = json.loads(json.dumps(request.data))
+            print("request data", request_data)
             post_fields = {
                 "url": "url",
                 "method": "method",
@@ -99,16 +105,23 @@ class UrlCreateUpdateView(APIView):
                 "responses": "responses"
             }
             validate_data = Utils.get_input(request, post_fields, request_data)
+            print("validated data",validate_data)
             pk = Utils.get_pk(request_data)
+            print("validated pk",pk)
+
             if pk:
                 instance = APIData.objects.get(pk=pk, deleted_at__isnull=True)
+                print("instance",instance)
+                print("validateddata",validate_data)
                 serializer = UrlSerializer(instance, data=validate_data, context={"request": request})
             else:
                 serializer = UrlSerializer(data=validate_data, context={"request": request})
             if serializer.is_valid():
-                serializer.save()
-                return CustomResponse.success(message="Url updated successfully" if pk else
-                "Url created successfully")
+                api_obj = serializer.save()
+                print("api",api_obj)
+                base_url = config("BASE_URL")
+                generated_url = base_url + '/' + api_obj.user_token.api_token + '/' + 'test/'+str(api_obj.url) 
+                return CustomResponse.success({'url': generated_url}, message="Url updated successfully" if pk else "Url created successfully")
 
             else:
 
@@ -127,6 +140,7 @@ class UrlCreateUpdateView(APIView):
 
         except Exception as e:
             import traceback
+            print(traceback.format_exc())
             # ErrorReporting.error_report("EXCEPTION", "HIGH", CategoryCreateUpdateView.__name__,
             #                                     traceback.format_exc(), request=request)
             return CustomResponse.failure(error_code=1002, message="exception caught", debug_message=str(e))

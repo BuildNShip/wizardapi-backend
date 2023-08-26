@@ -19,8 +19,8 @@ class ResponseCodes(models.Model):
 
     """
 
-    ACTIVE = 0
-    INACTIVE = 1
+    ACTIVE = 1
+    INACTIVE = 0
 
     STATUS_CHOICES = (
         (ACTIVE, 'Active'),

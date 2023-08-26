@@ -93,7 +93,8 @@ class Utils:
 
     @staticmethod
     def get_input(request, post_fields: dict, request_data_set: list, who_did=True) -> dict:
-        user_token = request.auth
+        print(request.auth,request.user,"test")
+        user_token = request.auth.id if request.auth else None
 
         if type(request_data_set) is list:
             for request_data in request_data_set:
@@ -103,7 +104,7 @@ class Utils:
                     else:
                         continue
                 if who_did:
-                    if request.user:
+                    if request.auth:
                         if any(c in request_data.keys() for c in ('id', 'pk', 'ID')):
                             request_data.update({"updated_by": user_token,
                                                  "user_token": user_token})
@@ -117,12 +118,13 @@ class Utils:
                 else:
                     continue
             if who_did:
-                if request.user:
+                if request.auth:
                     if any(c in request_data_set.keys() for c in ('id', 'pk', 'ID')):
                         request_data_set.update({"updated_by": user_token, "user_token": user_token})
                     else:
                         request_data_set.update({"updated_by": user_token, "created_by": user_token,
-                                                 "user_token": user_token})
+                                                "user_token": user_token})
+        print("requestdataset",request_data_set)
         return request_data_set
 
     @staticmethod
@@ -151,6 +153,36 @@ class Utils:
         for i in range(pwd_length):
             pwd += ''.join(secrets.choice(alphabet))
         return pwd
+
+    @staticmethod
+    def change_dict_keys(request, post_fields: dict, request_data_set: list, who_did=True) -> dict:
+        # validate_data = {} if type(request_data_set) is dict else []
+        if type(request_data_set) is list:
+            for request_data in request_data_set:
+                for key, value in post_fields.items():
+                    if value in request_data.keys():
+                        request_data[key] = request_data.pop(value)
+                    else:
+                        continue
+                if who_did:
+                    if request.user:
+                        if any(c in request_data.keys() for c in ('id', 'pk', 'ID')):
+                            request_data.update({"updated_by": request.user.id})
+                        else:
+                            request_data.update({"updated_by": request.user.id, "created_by": request.user.id})
+        else:
+            for key, value in post_fields.items():
+                if value in request_data_set.keys():
+                    request_data_set[key] = request_data_set.pop(value)
+                else:
+                    continue
+            if who_did:
+                if request.user:
+                    if any(c in request_data_set.keys() for c in ('id', 'pk', 'ID')):
+                        request_data_set.update({"updated_by": request.user.id})
+                    else:
+                        request_data_set.update({"updated_by": request.user.id, "created_by": request.user.id})
+        return request_data_set
 
 
 class CustomResponse:

@@ -37,14 +37,16 @@ class CommonAuthResourceAccess:
     END_POINTS = {
         "AUTH_TOKEN_VERIFY": "/api/verify-token",
     }
-
-    def verify_auth_token(self, token: str):
+    
+    def verify_auth_token(self, token):
         """
                 function for Accessing common auth Service Authentication API.
         """
         json_data = {}
         try:
+            print(self.URL)
             url = self.URL + self.END_POINTS.get("AUTH_TOKEN_VERIFY")
+
             timestamp, signature = CommonAuthAccessSignature().generate_signature()
             header = {
                 "Content-Type": "application/json",
@@ -54,6 +56,7 @@ class CommonAuthResourceAccess:
             payload = {
                 "token": token,
             }
+            print(payload,signature,timestamp,url)
             result = requests.post(url, data=json.dumps(payload), headers=header)
             if result.status_code == 200:
                 json_data = json.loads(result.text)
@@ -61,8 +64,8 @@ class CommonAuthResourceAccess:
             # ErrorReportingModel.error_report("NO_DATA", "HIGH", "get_resource", str(result))
 
         except Exception as e:
-            pass
-            # import traceback
+            import traceback
+            print(traceback.format_exc())
             # ErrorReportingModel.error_report("EXCEPTION", "HIGH", "get_resource", traceback.format_exc())
 
         return json_data

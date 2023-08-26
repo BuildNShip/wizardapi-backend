@@ -22,8 +22,8 @@ class UserToken(models.Model):
 
     """
 
-    ACTIVE = 0
-    INACTIVE = 1
+    ACTIVE = 1
+    INACTIVE = 0
 
     STATUS_CHOICES = (
         (ACTIVE, 'Active'),
@@ -66,8 +66,8 @@ class APIData(models.Model):
 
     """
 
-    ACTIVE = 0
-    INACTIVE = 1
+    ACTIVE = 1
+    INACTIVE = 0
 
     STATUS_CHOICES = (
         (ACTIVE, 'Active'),
@@ -118,8 +118,8 @@ class ApiResponses(models.Model):
 
     """
 
-    ACTIVE = 0
-    INACTIVE = 1
+    ACTIVE = 1
+    INACTIVE = 0
 
     STATUS_CHOICES = (
         (ACTIVE, 'Active'),

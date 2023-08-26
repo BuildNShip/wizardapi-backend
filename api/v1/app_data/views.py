@@ -27,13 +27,14 @@ class ResponseCodeListView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
+        print(ResponseCodes.objects.all())
         page = request.query_params.get("pageIndex", 1)
         per_page = request.query_params.get("perPage", None)
         filter_query = request.query_params.get("query", "")
         kwargs = {"code__icontains": filter_query, "deleted_at__isnull": True,
                   "status": ResponseCodes.ACTIVE} if filter_query != "" else {"deleted_at__isnull": True,
-                                                                              "status": ResponseCodes.ACTIVE}
-
+                                                                           "status": ResponseCodes.ACTIVE}
+        print(kwargs)
         queryset = ResponseCodes.objects.filter(**kwargs)
         pagination = Utils.pagination(queryset, page, per_page)
         serializer = CodeSerializer(pagination.get("queryset"), many=True)
